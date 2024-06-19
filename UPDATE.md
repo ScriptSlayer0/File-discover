@@ -1,0 +1,2 @@
+I updated it to work on windows as well as unix system. It searches the files of the user directory. I also took out the saving to the file part because this would ideally be a terminal application so best practice would be to pipe it to a file, which would also allow the user to save it to a desiered file name. 
+essentially use it like `python discover.py <filename>`

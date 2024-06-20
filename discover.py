@@ -25,5 +25,5 @@ if __name__ == '__main__':
     try:
         main()
     except KeyboardInterrupt:
-        print("Interrupción del teclado recibida, saliendo...")
+        print("\n Interrupción del teclado recibida, saliendo...")
         exit()

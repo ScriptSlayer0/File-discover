@@ -5,21 +5,21 @@ def find_home()->str:
         return "HOMEPATH"
     return "HOME"
 
-def discover(extensiones):
-    for entrada in os.scandir(os.environ[find_home()]):
-        if entrada.is_dir() and not entrada.name.startswith('.'):
-            for rutabs, _, archivos in os.walk(entrada.path):
+def discover(extensions):
+    for entry in os.scandir(os.environ[find_home()]):
+        if entry.is_dir() and not entry.name.startswith('.'):
+            for rutabs, _, files in os.walk(entry.path):
                 # Comprobar la extensión del archivo en lugar de si el archivo termina con la extensión
-                for archivo in archivos:
-                    if os.path.splitext(archivo)[1] in extensiones:
-                        print(os.path.join(rutabs, archivo)+'\n')
+                for file in files:
+                    if os.path.splitext(file)[1] in extensions:
+                        print(os.path.join(rutabs, file)+'\n')
 
 def main():
     # Solicitar al usuario que introduzca las extensiones de archivo que desea buscar
-    extensiones_usuario = input("Por favor, introduce las extensiones de archivo que deseas buscar, separadas por comas: ")
+    user_extensions = input("Por favor, introduce las extensiones de archivo que deseas buscar, separadas por comas: ")
     # Convertir la cadena de entrada del usuario en un conjunto de extensiones
-    extensiones = set(extension.strip() for extension in extensiones_usuario.split(','))
-    discover(extensiones)
+    extensions = set(extension.strip() for extension in user_extensions.split(','))
+    discover(extensions)
 
 if __name__ == '__main__':
     try:

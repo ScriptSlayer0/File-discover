@@ -1,43 +1,28 @@
 import os, platform, psutil
 
 def screen_cleaner():
-    if os.name == 'nt': #windows
-        os.system('cls')
-    else:
-        os.system('clear')
+    os.system('cls' if os.name == 'nt' else 'clear')
 
 def find_home() -> str:
-    if "Windows" in platform.platform():
-        return os.environ["USERPROFILE"]
-    return os.environ["HOME"]
+    return os.environ["USERPROFILE"] if "Windows" in platform.platform() else os.environ["HOME"]
 
 def detect_disks() -> list:
-    partitions = psutil.disk_partitions()
-    disks = [partition.mountpoint for partition in partitions if not partition.mountpoint.startswith('/sys')]
-    return disks
+    return [partition.mountpoint for partition in psutil.disk_partitions() if not partition.mountpoint.startswith('/sys')]
+
+def search_directory(directory, extensions):
+    for root, _, files in os.walk(directory):
+        for file in files:
+            if os.path.splitext(file)[1] in extensions:
+                print(os.path.join(root, file))
 
 def discover(extensions, search_path):
     home_directory = find_home()
+    search_directory(home_directory, extensions)
     
-    # Search in the user's home directory
-    for entry in os.scandir(home_directory):
-        if entry.is_dir() and not entry.name.startswith('.'):
-            for root, _, files in os.walk(entry.path):
-                for file in files:
-                    if os.path.splitext(file)[1] in extensions:
-                        print(os.path.join(root, file))
-    
-    # Search in other disks
     if search_path:
-        disks = detect_disks()
-        for disk in disks:
-            if disk != home_directory:  # Avoid searching in the user's home directory again
-                for entry in os.scandir(disk):
-                    if entry.is_dir() and not entry.name.startswith('.'):
-                        for root, _, files in os.walk(entry.path):
-                            for file in files:
-                                if os.path.splitext(file)[1] in extensions:
-                                    print(os.path.join(root, file))
+        for disk in detect_disks():
+            if disk != home_directory:
+                search_directory(disk, extensions)
 
 def check_affirm(affirmation):
     return affirmation.lower() in ["y", "yes"]
@@ -55,7 +40,5 @@ if __name__ == '__main__':
         main()
     except KeyboardInterrupt:
         print("\nKeyboard interruption received, exiting...")
-        exit()
     except Exception as e:
         print(f"An error occurred: {e}")
-        exit()

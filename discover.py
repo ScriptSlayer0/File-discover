@@ -1,24 +1,34 @@
 import os, platform, psutil
 
 def screen_cleaner():
+    # Clear the screen based on the operating system
     os.system('cls' if os.name == 'nt' else 'clear')
 
 def find_home() -> str:
-    return os.environ["USERPROFILE"] if "Windows" in platform.platform() else os.environ["HOME"]
+    # Return the home directory based on the operating system
+    return os.environ["USERPROFILE"] if "Windows" in platform.system() else os.environ["HOME"]
 
 def detect_disks() -> list:
+    # Detect and return a list of disk partitions, excluding system partitions
     return [partition.mountpoint for partition in psutil.disk_partitions() if not partition.mountpoint.startswith('/sys')]
 
 def is_safe_path(basedir, path, follow_symlinks=True):
-    if follow_symlinks:
-        return os.path.realpath(path).startswith(basedir)
-    return os.path.abspath(path).startswith(basedir)
+    # Check if the path is within the base directory
+    real_path = os.path.realpath(path) if follow_symlinks else os.path.abspath(path)
+    return real_path.startswith(basedir)
 
 def search_directory(directory, extensions):
-    if not is_safe_path(find_home(), directory):
-        print(f"Directory {directory} is not safe!")
+    # Validate the directory before using it
+    if not os.path.isdir(directory):
+        print(f"The directory {directory} does not exist or is not a valid directory!")
         return
     
+    # Check if the directory is within the user's home directory
+    if not is_safe_path(find_home(), directory):
+        print(f"The directory {directory} is outside your user folder and might be unsafe!")
+        return
+    
+    # Walk through the directory and print files with the specified extensions
     for root, _, files in os.walk(directory):
         for file in files:
             file_path = os.path.join(root, file)
@@ -26,6 +36,7 @@ def search_directory(directory, extensions):
                 print(file_path)
 
 def discover(extensions, search_path):
+    # Search for files with the specified extensions in the home directory and optionally in other disks
     home_directory = find_home()
     search_directory(home_directory, extensions)
     
@@ -35,9 +46,11 @@ def discover(extensions, search_path):
                 search_directory(disk, extensions)
 
 def check_affirm(affirmation):
+    # Check if the user's input is an affirmation
     return affirmation.lower() in ["y", "yes"]
 
 def main():
+    # Main function to run the file discovery program
     screen_cleaner()
     print("Welcome to file discover")
     user_extensions = input("Please enter the file extensions you want to search for, separated by commas: ")

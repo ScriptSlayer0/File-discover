@@ -9,11 +9,17 @@ def find_home() -> str:
 def detect_disks() -> list:
     return [partition.mountpoint for partition in psutil.disk_partitions() if not partition.mountpoint.startswith('/sys')]
 
+def is_safe_path(basedir, path, follow_symlinks=True):
+    if follow_symlinks:
+        return os.path.realpath(path).startswith(basedir)
+    return os.path.abspath(path).startswith(basedir)
+
 def search_directory(directory, extensions):
     for root, _, files in os.walk(directory):
         for file in files:
-            if os.path.splitext(file)[1] in extensions:
-                print(os.path.join(root, file))
+            file_path = os.path.join(root, file)
+            if os.path.splitext(file)[1] in extensions and is_safe_path(directory, file_path):
+                print(file_path)
 
 def discover(extensions, search_path):
     home_directory = find_home()

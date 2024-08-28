@@ -15,6 +15,10 @@ def is_safe_path(basedir, path, follow_symlinks=True):
     return os.path.abspath(path).startswith(basedir)
 
 def search_directory(directory, extensions):
+    if not is_safe_path(find_home(), directory):
+        print(f"Directory {directory} is not safe!")
+        return
+    
     for root, _, files in os.walk(directory):
         for file in files:
             file_path = os.path.join(root, file)

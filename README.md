@@ -18,6 +18,7 @@ git clone https://github.com/ScriptSlayer0/File-discover.git
 
 ### Requirements
 - Python 3.x
+- psutil 6.0.0 (see requierements.txt)
 
 ### Setup
 Navigate to the project directory:

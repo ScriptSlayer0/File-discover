@@ -1,5 +1,5 @@
 # File-Discover
-
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=ScriptSlayer0_File-discover&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=ScriptSlayer0_File-discover)
 ## Overview
 **File-Discover** is a Python-based utility designed to locate and list files within a specified directory. This tool is ideal for users who need a quick and simple way to discover files in their system, whether for organizational purposes or system management.
 
@@ -47,6 +47,13 @@ options:
 
 ## License
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+
+## Contact
+If you have any questions or encounter any issues, feel free to open an issue on GitHub.
+
+---
+Happy discovering!
+
 
 ## Contact
 If you have any questions or encounter any issues, feel free to open an issue on GitHub.

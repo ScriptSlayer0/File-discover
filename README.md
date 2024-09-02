@@ -53,10 +53,3 @@ If you have any questions or encounter any issues, feel free to open an issue on
 
 ---
 Happy discovering!
-
-
-## Contact
-If you have any questions or encounter any issues, feel free to open an issue on GitHub.
-
----
-Happy discovering!

@@ -18,7 +18,8 @@ git clone https://github.com/ScriptSlayer0/File-discover.git
 
 ### Requirements
 - Python 3.x
-- psutil 6.0.0 (see requierements.txt)
+- psutil
+- See for more details [requierements.txt](https://github.com/ScriptSlayer0/File-discover/blob/main/requirements.txt)
 
 ### Setup
 Navigate to the project directory:
@@ -33,16 +34,16 @@ python disc.py
 ```
 Some more usage info:
 ```
-usage: disc.py [-h] [-p] [ext ...]
+usage: disc.py [-h] [-p] [-ext]
 
 Store all inputs in a single list.
 
-positional arguments:
-  ext         The extenstions you want to search for, serperated by a space
-
 options:
-  -h, --help  show this help message and exit
-  -p, --path  search all directories in path too?
+  -h, --help Show this help message and exit
+  -ext, --extension The extensions you want to search for, separated by a space
+  -p, --path Search all directories in path too?
+  -t, --time Show the time taken to scan all directories
+  -d, --disk Scan all hard disks
 ```
 
 ## License

@@ -1,5 +1,5 @@
 import os
-from functions.is_save_path import is_safe_path
+from funtions.is_save_path import is_safe_path
 
 def find_home() -> str:
     """Return the home directory based on the operating system."""

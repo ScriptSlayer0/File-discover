@@ -1,7 +1,7 @@
 import time
-from funtions.affirmation_checker import check_affirm
-from funtions.disk_detection import detect_disks
-from funtions.searching_directories import find_home, search_directory
+from functions.affirmation_checker import check_affirm
+from functions.disk_detection import detect_disks
+from functions.searching_directories import find_home, search_directory
 from utils.screan_cleaner import cleaner
 
 def discover(extensions, force_search, show_time, scan_disks):

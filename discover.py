@@ -4,16 +4,10 @@ from funtions.disk_detection import detect_disks
 from funtions.searching_directories import find_home, search_directory
 from utils.screan_cleaner import cleaner
 
-def handle_force_search() -> bool:
-    """Handle the force search option and return user authorization."""
-    print("Warning: Searching in other disks might be unsafe and could take a long time.")
-    user_choice = input("Do you want to proceed with a full search in all disks? [y/n]: ")
-    return check_affirm(user_choice)
-
 def discover(extensions, force_search, show_time, scan_disks):
     """Search for files with the specified extensions in the home directory and optionally in other disks."""
     home_directory = find_home()
-    user_authorized = handle_force_search() if force_search else False
+    user_authorized = check_affirm("", context="force_search") if force_search else False
 
     start_time = time.time()  # Start the timer
     

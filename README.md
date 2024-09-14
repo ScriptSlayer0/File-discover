@@ -34,16 +34,17 @@ python disc.py
 ```
 Some more usage info:
 ```
-usage: disc.py [-h] [-p] [-ext]
+usage: discover.py [-h] [-p] [-ext]
 
 Store all inputs in a single list.
 
 options:
-  -h, --help Show this help message and exit
-  -ext, --extension The extensions you want to search for, separated by a space
-  -p, --path Search all directories in path too?
-  -t, --time Show the time taken to scan all directories
-  -d, --disk Scan all hard disks
+-h, --help            Show this help message and exit
+-ext, --extension      The extensions you want to search for, separated by a space
+-f, --forced           Force search
+-p, --path             Search all directories in path too?
+-t, --time             Show the time taken to scan all directories
+-d, --disk             Scan all hard disks
 ```
 
 ## License

@@ -1,60 +1,57 @@
 import time
-from funtions.affirmation_checker import check_affirm
+from funtions.arguments import parse_arguments
 from funtions.disk_detection import detect_disks
-from funtions.searching_directories import find_home, search_directory
+from funtions.scanning_time import format_elapsed_time
+from funtions.search_engine import find_home, search_directory
+from funtions.user_authoritation_checker import get_user_authorization
 from utils.screan_cleaner import cleaner
+
+def perform_search(home_directory, extensions, force_search, user_authorized, scan_disks):
+    """Perform the search operation on the home directory and optionally on other disks."""
+    search_directory(home_directory, extensions, force_search, user_authorized)
+    
+    if scan_disks:
+        disks = detect_disks()
+        for disk in disks:
+            if disk != home_directory:
+                if force_search or user_authorized:
+                    search_directory(disk, extensions, force_search, user_authorized)
+                else:
+                    print(f"Cannot perform a complete scan of disk {disk} without proper authorization. Skipping.")
 
 def discover(extensions, force_search, show_time, scan_disks):
     """Search for files with the specified extensions in the home directory and optionally in other disks."""
     home_directory = find_home()
-    user_authorized = check_affirm("", context="force_search") if force_search else False
+    user_authorized = get_user_authorization(force_search)
 
     start_time = time.time()  # Start the timer
     
-    search_directory(home_directory, extensions, force_search, user_authorized)
-    
-    if scan_disks and user_authorized:
-        for disk in detect_disks():
-            if disk != home_directory:
-                search_directory(disk, extensions, force_search, user_authorized)
+    perform_search(home_directory, extensions, force_search, user_authorized, scan_disks)
     
     if show_time:
         end_time = time.time()  # End the timer
         elapsed_time = end_time - start_time
-        days, remainder = divmod(elapsed_time, 86400)
-        hours, remainder = divmod(remainder, 3600)
-        minutes, seconds = divmod(remainder, 60)
-        
-        time_parts = []
-        if days > 0:
-            time_parts.append(f"{int(days)} days")
-        if hours > 0:
-            time_parts.append(f"{int(hours)} hours")
-        if minutes > 0:
-            time_parts.append(f"{int(minutes)} minutes")
-        time_parts.append(f"{seconds:.2f} seconds")
-        
-        print(f"Total time taken for scanning: {', '.join(time_parts)}")
+        formatted_time = format_elapsed_time(elapsed_time)
+        print(f"Total time taken for scanning: {formatted_time}")
 
 def main():
     """Main function to run the file discovery program."""
     cleaner()
     print("Welcome to the File Discovery Tool!")
-    user_extensions = input("Please enter the file extensions you want to search for, separated by commas (e.g., .exe, .pdf): ")
+
+    args = parse_arguments()
     
-    if not user_extensions:
+    if not args.extension:
         print("No file extensions provided. Exiting...")
         return
-    
-    force_search = check_affirm(input("Would you like to force search in all directories, including potentially unsafe ones? [y/n]: "))
-    
-    extensions = set(extension.strip() for extension in user_extensions.split(',') if extension.strip())
+
+    extensions = set(extension.strip() for extension in args.extension if extension.strip())
     
     if not extensions:
         print("No valid file extensions provided. Exiting...")
         return
-    
-    discover(extensions, force_search, show_time=True, scan_disks=True)
+
+    discover(extensions, args.forced, args.time, args.disk)
 
 if __name__ == '__main__':
     try:

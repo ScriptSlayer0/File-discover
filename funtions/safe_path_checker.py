@@ -11,5 +11,5 @@ def is_safe_path(basedir, path, follow_symlinks=True) -> bool:
         # Check if the real path is within the base directory
         return os.path.commonpath([basedir, real_path]) == basedir
     except (ValueError, OSError) as e:
-        #print(f"Error checking path safety: {e}")
+        print(f"Error checking path safety: {e}")
         return False

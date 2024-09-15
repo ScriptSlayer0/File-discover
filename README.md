@@ -30,7 +30,7 @@ cd File-discover
 ## Usage
 To run the tool, execute the `discover.py` script:
 ```bash
-python disc.py
+python discover.py
 ```
 Some more usage info:
 ```

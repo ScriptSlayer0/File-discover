@@ -2,5 +2,18 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
     "config:recommended"
+  ],
+  "pip_requirements": {
+    "enabled": true
+  },
+  "packageRules": [
+    {
+      "matchPackageNames": ["psutil"],
+      "enabled": true
+    },
+    {
+      "matchDatasources": ["pypi"],
+      "registryUrls": ["https://pypi.org/simple"]
+    }
   ]
 }

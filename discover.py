@@ -1,9 +1,10 @@
 import time
-from funtions.arguments import parse_arguments
-from funtions.disk_detection import detect_disks
-from funtions.scanning_time import format_elapsed_time
+from functions.arguments import parse_arguments
+from functions.disk_detection import detect_disks
+from functions.disk_structure.disk_partitions import print_partition_structure
+from functions.scanning_time import format_elapsed_time
+from functions.user_authoritation_checker import get_user_authorization
 from funtions.search_engine import find_home, search_directory
-from funtions.user_authoritation_checker import get_user_authorization
 from utils.screan_cleaner import cleaner
 
 def perform_search(home_directory, extensions, force_search, user_authorized, scan_disks):
@@ -41,6 +42,11 @@ def main():
 
     args = parse_arguments()
     
+    #When user inputs -s or --structure
+    if args.structure:
+        print_partition_structure()
+        return
+
     if not args.extension:
         print("No file extensions provided. Exiting...")
         return

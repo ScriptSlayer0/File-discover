@@ -5,7 +5,7 @@ from functions.disk_structure.disk_partitions import print_partition_structure
 from functions.scanning_time import format_elapsed_time
 from functions.user_authoritation_checker import get_user_authorization
 from functions.searching.search_engine_old import find_home, search_directory
-from utils.screan_cleaner import cleaner
+from functions.utils.screan_cleaner import cleaner
 
 def perform_search(home_directory, extensions, force_search, user_authorized, scan_disks):
     """Perform the search operation on the home directory and optionally on other disks."""

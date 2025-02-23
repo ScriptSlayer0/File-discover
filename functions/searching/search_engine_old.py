@@ -1,5 +1,7 @@
 import os
-from funtions.safe_path_checker import is_safe_path
+
+from functions.safe_path_checker import is_safe_path
+
 
 
 def find_home() -> str:

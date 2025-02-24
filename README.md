@@ -45,6 +45,7 @@ options:
 -p, --path             Search all directories in path too?
 -t, --time             Show the time taken to scan all directories
 -d, --disk             Scan all hard disks
+ -s, --structure       Show only the partition structure of hard disks
 ```
 
 ## License

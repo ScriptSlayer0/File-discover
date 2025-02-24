@@ -1,12 +1,13 @@
 import time
 from functions.arguments import parse_arguments
-from functions.disk_detection import detect_disks
+from functions.disk_structure.disk_detection import detect_disks
 from functions.disk_structure.disk_partitions import print_partition_structure
 from functions.scanning_time import format_elapsed_time
 from functions.user_authoritation_checker import get_user_authorization
 from functions.searching.search_engine_old import find_home, search_directory
 from functions.utils.screan_cleaner import cleaner
 
+#This will be reworked/moved or removed
 def perform_search(home_directory, extensions, force_search, user_authorized, scan_disks):
     """Perform the search operation on the home directory and optionally on other disks."""
     search_directory(home_directory, extensions, force_search, user_authorized)

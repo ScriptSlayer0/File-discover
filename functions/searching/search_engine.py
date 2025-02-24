@@ -2,7 +2,7 @@ import os
 from typing import List, Set, Generator, Union
 from pathlib import Path
 from functools import lru_cache
-from functions.safe_path_checker import is_safe_path
+from functions.searching.safe_path_checker import is_safe_path
 
 class DirectorySearcher:
     """A class to handle file searching operations with safety checks."""

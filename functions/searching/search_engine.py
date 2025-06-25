@@ -21,20 +21,24 @@ def search_files(directory: Path, extensions: Set[str]) -> List[Path]:
     matching_files = []
 
     def scan_directory(current_dir: Path):
+        """Recursively scan a directory for files with the given extensions."""
         try:
             with os.scandir(current_dir) as entries:
                 for entry in entries:
                     if entry.is_file() and any(entry.name.endswith(ext) for ext in extensions):
                         file_path = current_dir / entry.name
                         matching_files.append(file_path)
-                        print(file_path)
+                        print(f"Found file: {file_path}")
                     elif entry.is_dir():
                         scan_directory(current_dir / entry.name)
+        except FileNotFoundError:
+            print(f"Directory {current_dir} not found.")
         except PermissionError:
-            print(f"Permission denied: {current_dir}")
+            print(f"Permission denied for {current_dir}.")
         except Exception as e:
-            print(f"An error occurred while searching {current_dir}: {e}")
+            print(f"Error scanning {current_dir}: {e}")
 
+    
     scan_directory(directory)
     return matching_files
 
@@ -53,14 +57,18 @@ def search_directory(directory: Union[str, Path], extensions: List[str], force_s
     """
     directory_path = Path(directory).resolve()
     if not directory_path.is_dir():
+        # Check if the directory exists and is valid
         print(f"The directory {directory_path} does not exist or is not a valid directory!")
+        print("Please ensure the path is correct and accessible.")
         return []
-    
+
     home_directory = find_home()
     
     if not is_safe_path(home_directory, directory_path) and not force_search and not user_authorized:
+        # Check if the path is unsafe and prompt the user
         print(f"Warning: Some paths of {directory_path} are outside of {home_directory} folder and might be unsafe!")
-        user_input = input("Do you want to proceed with the search? (y/n): ").lower()
+        print("Do you want to proceed with the search? (y/n)")
+        user_input = input().lower()
         if user_input != 'y':
             print("Search aborted.")
             return []

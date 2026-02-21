@@ -1,67 +1,91 @@
 import os
+import stat
+import sys
 
-modo = os.stat(r"C:\Users\Unai\SendTo").st_mode
+
+def get_tipo_archivo(mode):
+    if stat.S_ISDIR(mode):
+        return "d"
+    elif stat.S_ISLNK(mode):
+        return "l"
+    elif stat.S_ISCHR(mode):
+        return "c"
+    elif stat.S_ISBLK(mode):
+        return "b"
+    elif stat.S_ISSOCK(mode):
+        return "s"
+    elif stat.S_ISFIFO(mode):
+        return "p"
+    else:
+        return "-"
+
 
 def get_rwx(mode):
-    # Owner permissions (r, w, x)
-    r = (mode & 4) != 0  # SUID (4)  // Lectura
-    w = (mode & 2) != 0  # SGID (2)  // Escritura
-    x = (mode & 1) != 0  # sticky (1) // Ejecución
+    permisos = []
 
-    # Group permissions (r, w, x)
-    gr_r = (mode & 8) != 0  # Group r
-    gr_w = (mode & 16) != 0  # Group w
-    gr_x = (mode & 32) != 0  # Group x
-
-    # Others permissions (r, w, x)
-    oth_r = (mode & 128) != 0  # Others r
-    oth_w = (mode & 256) != 0  # Others w
-    oth_x = (mode & 512) != 0  # Others x
-
-    # Construir la cadena rwx con hyphens
-    rwx = []
-    if r:
-        rwx.append("r")
+    # Owner
+    permisos.append("r" if mode & stat.S_IRUSR else "-")
+    permisos.append("w" if mode & stat.S_IWUSR else "-")
+    if mode & stat.S_ISUID:
+        permisos.append("s" if mode & stat.S_IXUSR else "S")
     else:
-        rwx.append("-")
-    if w:
-        rwx.append("w")
-    else:
-        rwx.append("-")
-    if x:
-        rwx.append("x")
-    else:
-        rwx.append("-")
+        permisos.append("x" if mode & stat.S_IXUSR else "-")
 
-    if gr_r:
-        rwx.append("r")
+    # Group
+    permisos.append("r" if mode & stat.S_IRGRP else "-")
+    permisos.append("w" if mode & stat.S_IWGRP else "-")
+    if mode & stat.S_ISGID:
+        permisos.append("s" if mode & stat.S_IXGRP else "S")
     else:
-        rwx.append("-")
-    if gr_w:
-        rwx.append("w")
-    else:
-        rwx.append("-")
-    if gr_x:
-        rwx.append("x")
-    else:
-        rwx.append("-")
+        permisos.append("x" if mode & stat.S_IXGRP else "-")
 
-    if oth_r:
-        rwx.append("r")
+    # Others
+    permisos.append("r" if mode & stat.S_IROTH else "-")
+    permisos.append("w" if mode & stat.S_IWOTH else "-")
+    if mode & stat.S_ISVTX:
+        permisos.append("t" if mode & stat.S_IXOTH else "T")
     else:
-        rwx.append("-")
-    if oth_w:
-        rwx.append("w")
-    else:
-        rwx.append("-")
-    if oth_x:
-        rwx.append("x")
-    else:
-        rwx.append("-")
+        permisos.append("x" if mode & stat.S_IXOTH else "-")
 
-    return "".join(rwx)
+    return "".join(permisos)
 
 
-print(f"Permisos: {get_rwx(modo)}")
+def permisos_especiales(mode):
+    return {
+        "SUID": bool(mode & stat.S_ISUID),
+        "SGID": bool(mode & stat.S_ISGID),
+        "Sticky": bool(mode & stat.S_ISVTX),
+    }
 
 
+def main(ruta="."):  # por defecto usa directorio actual
+    try:
+        st = os.stat(ruta)
+        mode = st.st_mode
+
+        tipo = get_tipo_archivo(mode)
+        rwx = get_rwx(mode)
+        especiales = permisos_especiales(mode)
+
+        print(f"Archivo: {ruta}")
+        print(f"Permisos estilo ls -l: {tipo}{rwx}")
+        print(f"Octal: {oct(mode & 0o7777)}")
+
+        # Mostrar permisos especiales
+        any_especial = any(especiales.values())
+        if any_especial:
+            print("Permisos especiales activos:")
+            for k, v in especiales.items():
+                if v:
+                    print(f"  {k}")
+        else:
+            print("No hay permisos especiales.")
+
+    except FileNotFoundError:
+        print("El archivo no existe.")
+
+
+if __name__ == "__main__":
+    # Si hay argumento lo usa, si no usa "."
+    ruta = sys.argv[1] if len(sys.argv) > 1 else "."
+    main(ruta)

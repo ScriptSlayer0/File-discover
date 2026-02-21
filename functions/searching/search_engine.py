@@ -1,76 +1,115 @@
 from pathlib import Path
-from typing import List, Union, Set
+from typing import Union, List, Set
 from functions.searching.safe_path_checker import is_safe_path
 import os
+from concurrent.futures import ThreadPoolExecutor, as_completed
+import logging
+
+# =========================
+# Logging en vivo
+# =========================
+logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO)  # Cambia a DEBUG si quieres más detalles
+
+# =========================
+# Helper functions
+# =========================
 
 def find_home() -> Path:
     """Return the home directory as a Path object."""
     return Path.home()
 
-def search_files(directory: Path, extensions: Set[str]) -> List[Path]:
-    """
-    Search for files with specified extensions in a directory and its subdirectories.
 
-    Args:
-        directory (Path): The directory to search in.
-        extensions (Set[str]): Set of file extensions to search for.
+def _scan_block(directories: List[Path], extensions_set: Set[str]) -> tuple[list[str], list[Path]]:
+    """
+    Scan a list of directories (non-recursive) and return matching files and subdirectories.
 
     Returns:
-        List[Path]: List of file paths matching the extensions.
+        files_found (list[str]): List of file paths found.
+        subdirs (list[Path]): List of subdirectories to scan next.
     """
-    matching_files = []
+    files_found = []
+    subdirs = []
 
-    def scan_directory(current_dir: Path):
-        """Recursively scan a directory for files with the given extensions."""
+    for directory in directories:
         try:
-            with os.scandir(current_dir) as entries:
-                for entry in entries:
-                    if entry.is_file() and any(entry.name.endswith(ext) for ext in extensions):
-                        file_path = current_dir / entry.name
-                        matching_files.append(file_path)
-                        print(f"Found file: {file_path}")
-                    elif entry.is_dir():
-                        scan_directory(current_dir / entry.name)
-        except FileNotFoundError:
-            print(f"Directory {current_dir} not found.")
+            for entry in os.scandir(directory):
+                if entry.is_file() and entry.name.endswith(tuple(extensions_set)):
+                    files_found.append(entry.path)
+                elif entry.is_dir():
+                    subdirs.append(Path(entry.path))
         except PermissionError:
-            print(f"Permission denied for {current_dir}.")
-        except Exception as e:
-            print(f"Error scanning {current_dir}: {e}")
+            logger.warning(f"Permission denied: {directory}")
+        except OSError as e:
+            logger.warning(f"Error accessing {directory}: {e}")
 
-    
-    scan_directory(directory)
-    return matching_files
+    return files_found, subdirs
 
-def search_directory(directory: Union[str, Path], extensions: List[str], force_search: bool = False, user_authorized: bool = False) -> List[Path]:
+# =========================
+# Core search functions
+# =========================
+
+def search_files_parallel(
+    directory: Path,
+    extensions: Union[Set[str], List[str]],
+    max_workers: int = 8
+) -> List[Path]:
     """
-    Search for files with the specified extensions in the directory.
+    Search for files with specified extensions using parallel scanning,
+    mostrando los archivos encontrados en tiempo real con logging.
+    """
+    extensions_set = set(extensions)
+    files_found: List[Path] = []
+    dirs_to_scan = [directory]
+
+    with ThreadPoolExecutor(max_workers=max_workers) as executor:
+        while dirs_to_scan:
+            # Enviar un bloque de directorios a un hilo
+            futures = {executor.submit(_scan_block, dirs_to_scan[:50], extensions_set): 1}
+            dirs_to_scan = []
+
+            for future in as_completed(futures):
+                block_files, block_subdirs = future.result()
+                for f in block_files:
+                    files_found.append(Path(f))
+                    logger.info(f"Archivo encontrado: {f}")  # Mostrar en vivo
+                dirs_to_scan.extend(block_subdirs)
+
+    return files_found
+
+
+def search_directory(
+    directory: Union[str, Path],
+    extensions: Union[List[str], Set[str]],
+    force_search: bool = False,
+    user_authorized: bool = False,
+    max_workers: int = 8
+) -> List[Path]:
+    """
+    Search for files safely using parallel scanning, mostrando los archivos en vivo.
 
     Args:
-        directory (Union[str, Path]): The directory to search in.
-        extensions (List[str]): List of file extensions to search for.
-        force_search (bool): Whether to force the search in unsafe paths.
-        user_authorized (bool): Whether the user has authorized the search.
+        directory (str | Path): Directorio donde buscar.
+        extensions (List[str] | Set[str]): Extensiones de archivo a buscar.
+        force_search (bool): Ignorar la verificación de seguridad si True.
+        user_authorized (bool): Ignorar la advertencia de seguridad si True.
+        max_workers (int): Número de hilos para la búsqueda paralela.
 
     Returns:
-        List[Path]: List of file paths matching the extensions.
+        List[Path]: Lista de archivos encontrados.
     """
-    directory_path = Path(directory).resolve()
-    if not directory_path.is_dir():
-        # Check if the directory exists and is valid
-        print(f"The directory {directory_path} does not exist or is not a valid directory!")
-        print("Please ensure the path is correct and accessible.")
+    directory_path = Path(directory).resolve(strict=False)
+
+    if not directory_path.exists() or not directory_path.is_dir():
+        logger.error(f"Directory {directory_path} does not exist or is not valid.")
         return []
 
     home_directory = find_home()
-    
     if not is_safe_path(home_directory, directory_path) and not force_search and not user_authorized:
-        # Check if the path is unsafe and prompt the user
-        print(f"Warning: Some paths of {directory_path} are outside of {home_directory} folder and might be unsafe!")
-        print("Do you want to proceed with the search? (y/n)")
-        user_input = input().lower()
-        if user_input != 'y':
-            print("Search aborted.")
-            return []
-    
-    return search_files(directory_path, set(extensions))
+        logger.warning(
+            f"Directory {directory_path} is outside home ({home_directory}). "
+            f"Set user_authorized=True or force_search=True to proceed."
+        )
+        return []
+
+    return search_files_parallel(directory_path, extensions, max_workers=max_workers)

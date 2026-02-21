@@ -1,27 +1,40 @@
 import psutil
+from textual.app import App, ComposeResult
+from textual.widgets import DataTable, Header, Footer
+from textual.containers import Container
 
-from rich.console import Console
-from rich.panel import Panel
-from rich.table import Table
+class disk_partitions(App):
+
+    CSS = """
+    Screen {
+        align: center middle;
+    }
+    """
+
+    BINDINGS = [("q", "quit", "Quit")]
+
+    def compose(self) -> ComposeResult:
+        yield Header()
+        yield Container(
+            DataTable(id="partition_table")
+        )
+        yield Footer()
+
+    def on_mount(self) -> None:
+        table = self.query_one("#partition_table", DataTable)
+
+        table.add_columns("Mountpoint", "Device", "Filesystem", "Options")
+
+        partitions = psutil.disk_partitions()
+
+        for partition in partitions:
+            table.add_row(
+                partition.mountpoint,
+                partition.device,
+                partition.fstype,
+                partition.opts
+            )
 
 def print_partition_structure():
-    console = Console()
-    table = Table(title="Disk Partitions")
-    table.add_column("Mountpoint", style="green")
-    table.add_column("Device", style="magenta")
-    table.add_column("Filesystem", style="blue")
-    table.add_column("Options", style="cyan")
-
-    # Define the partitions list
-    partitions = psutil.disk_partitions()  # Add this line
-
-    for partition in partitions:
-        table.add_row(
-            partition.mountpoint,
-            partition.device,
-            partition.fstype,
-            partition.opts
-        )
-
-    panel = Panel(table, title="Disk Partitions", style="bold")
-    console.print(panel)
+    app = disk_partitions()
+    app.run()
